@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Welcome Page</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f6f8fb;
+        --surface: #ffffff;
+        --surface-alt: #f1f5fb;
+        --text: #1f2a37;
+        --muted: #65748b;
+        --primary: #2d63ff;
+        --primary-soft: #e6ebff;
+        --border: rgba(44, 62, 120, 0.12);
+        font-family:
+          Inter,
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        background:
+          radial-gradient(
+            circle at top,
+            rgba(45, 99, 255, 0.12),
+            transparent 32%
+          ),
+          linear-gradient(180deg, #f9fbff 0%, #f0f4fb 100%);
+        color: var(--text);
+      }
+
+      .card {
+        width: min(520px, calc(100vw - 32px));
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 28px;
+        box-shadow: 0 28px 60px rgba(19, 39, 78, 0.08);
+        padding: 48px 40px;
+        text-align: center;
+      }
+
+      h1 {
+        margin: 0 0 28px;
+        font-size: clamp(2rem, 3vw, 3rem);
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--text);
+      }
+
+      p {
+        margin: 0 0 32px;
+        color: var(--muted);
+        line-height: 1.8;
+      }
+
+      .button-group {
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+      }
+
+      .button-group a {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 18px 26px;
+        border-radius: 16px;
+        background: var(--primary);
+        color: #fff;
+        text-decoration: none;
+        font-size: 1rem;
+        font-weight: 600;
+        transition:
+          transform 180ms ease,
+          background 180ms ease,
+          box-shadow 180ms ease;
+        box-shadow: 0 14px 30px rgba(45, 99, 255, 0.14);
+      }
+
+      .button-group a:hover {
+        transform: translateY(-2px);
+        background: #1e49d9;
+        box-shadow: 0 20px 35px rgba(45, 99, 255, 0.16);
+      }
+
+      .button-group a.secondary {
+        background: var(--surface-alt);
+        color: var(--text);
+        box-shadow: 0 14px 30px rgba(20, 32, 57, 0.08);
+      }
+
+      .button-group a.secondary:hover {
+        background: #e4eaf8;
+        color: var(--text);
+      }
+
+      @media (max-width: 480px) {
+        .card {
+          padding: 32px 24px;
+          border-radius: 24px;
+        }
+
+        .button-group a {
+          padding: 16px 20px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="card">
+      <h1>WELCOME PAGE</h1>
+      <p>
+        Choisissez une action pour continuer. L'interface est conçue pour rester
+        claire, moderne et facile à utiliser sur mobile comme sur ordinateur.
+      </p>
+      <div class="button-group">
+        <a href="inscription.html">Inscription</a>
+        <a href="#" class="secondary" onclick="notify(event, 'Paiement')"
+          >Paiement</a
+        >
+        <a href="#" class="secondary" onclick="notify(event, 'Bulletin')"
+          >Bulletin</a
+        >
+      </div>
+    </main>
+
+    <script>
+      function notify(event, label) {
+        event.preventDefault();
+        alert(label + " : section à venir.");
+      }
+    </script>
+  </body>
+</html>
