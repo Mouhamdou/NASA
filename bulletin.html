@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Bulletin de notes</title>
+  <style>
+    :root{--bg:#eef2f7;--card:#ffffff;--accent:#4f46e5;--muted:#6b7280}
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;background:linear-gradient(180deg,#f6f8ff 0%,#eef2f7 100%);font-family:Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;color:#0f172a;display:flex;align-items:center;justify-content:center;padding:32px}
+    .wrap{width:100%;max-width:920px}
+    .card{background:var(--card);border-radius:14px;box-shadow:0 8px 30px rgba(15,23,42,0.08);padding:28px;border:1px solid rgba(15,23,42,0.04)}
+    h1{font-size:20px;margin:0 0 18px}
+    form .group{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+    label{font-size:13px;color:var(--muted)}
+    input[type=text],input[type=number],select{padding:10px 12px;border-radius:8px;border:1px solid rgba(15,23,42,0.08);background:#fff;font-size:15px}
+    .row{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+    .grades{width:100%;border-collapse:collapse;margin-top:14px}
+    .grades th,.grades td{padding:10px 8px;text-align:left;border-bottom:1px solid rgba(15,23,42,0.06)}
+    .grades th{font-weight:600;color:#111827;font-size:14px}
+    .module{font-weight:600}
+    .num{width:120px}
+    .avg{width:100px;font-weight:700;text-align:right}
+    .actions{display:flex;justify-content:flex-end;margin-top:14px}
+    button{background:var(--accent);color:#fff;padding:10px 16px;border-radius:10px;border:0;font-weight:600;cursor:pointer}
+    button:active{transform:translateY(1px)}
+    .summary{margin-top:18px;padding:16px;border-radius:12px;background:linear-gradient(180deg,#fff 0%,#fbfdff 100%);border:1px solid rgba(15,23,42,0.04)}
+    .summary h2{margin:0 0 12px;font-size:16px}
+    .flex-between{display:flex;justify-content:space-between;gap:12px}
+    @media (max-width:540px){.row{grid-template-columns:1fr}.num{width:auto}.avg{text-align:left}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>Bulletin de notes</h1>
+      <form id="bulletinForm" onsubmit="return false;">
+        <div class="row">
+          <div class="group">
+            <label for="matricule">Matricule</label>
+            <input type="text" id="matricule" name="matricule" required>
+          </div>
+          <div class="group">
+            <label for="prenom">Prénom</label>
+            <input type="text" id="prenom" name="prenom" required>
+          </div>
+          <div class="group">
+            <label for="nom">Nom</label>
+            <input type="text" id="nom" name="nom" required>
+          </div>
+        </div>
+
+        <div class="row" style="margin-top:4px">
+          <div class="group">
+            <label for="filiere">Filière</label>
+            <input type="text" id="filiere" name="filiere">
+          </div>
+          <div class="group">
+            <label for="niveau">Niveau</label>
+            <input type="text" id="niveau" name="niveau">
+          </div>
+        </div>
+
+        <table class="grades" aria-label="Tableau des notes">
+          <thead>
+            <tr>
+              <th>Modules</th>
+              <th>Devoir</th>
+              <th>Examen</th>
+              <th>Moyenne</th>
+            </tr>
+          </thead>
+          <tbody id="gradesBody">
+            <tr data-module="Maths">
+              <td class="module">Maths</td>
+              <td><input class="num" type="number" step="0.01" min="0" max="20" data-role="devoir"></td>
+              <td><input class="num" type="number" step="0.01" min="0" max="20" data-role="examen"></td>
+              <td class="avg" data-role="moyenne">-</td>
+            </tr>
+            <tr data-module="Français">
+              <td class="module">Français</td>
+              <td><input class="num" type="number" step="0.01" min="0" max="20" data-role="devoir"></td>
+              <td><input class="num" type="number" step="0.01" min="0" max="20" data-role="examen"></td>
+              <td class="avg" data-role="moyenne">-</td>
+            </tr>
+            <tr data-module="Anglais">
+              <td class="module">Anglais</td>
+              <td><input class="num" type="number" step="0.01" min="0" max="20" data-role="devoir"></td>
+              <td><input class="num" type="number" step="0.01" min="0" max="20" data-role="examen"></td>
+              <td class="avg" data-role="moyenne">-</td>
+            </tr>
+            <tr data-module="Droit">
+              <td class="module">Droit</td>
+              <td><input class="num" type="number" step="0.01" min="0" max="20" data-role="devoir"></td>
+              <td><input class="num" type="number" step="0.01" min="0" max="20" data-role="examen"></td>
+              <td class="avg" data-role="moyenne">-</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="actions">
+          <button id="validateBtn" type="button">VALIDER</button>
+        </div>
+      </form>
+
+      <div id="result" class="summary" style="display:none"></div>
+    </div>
+  </div>
+
+  <script>
+    (function(){
+      const tbody = document.getElementById('gradesBody');
+      const rows = Array.from(tbody.querySelectorAll('tr'));
+      const validateBtn = document.getElementById('validateBtn');
+      const result = document.getElementById('result');
+
+      function toNum(v){
+        const n = parseFloat(v);
+        return Number.isFinite(n) ? n : NaN;
+      }
+
+      function updateRow(r){
+        const devoir = toNum(r.querySelector('[data-role="devoir"]').value);
+        const examen = toNum(r.querySelector('[data-role="examen"]').value);
+        const cell = r.querySelector('[data-role="moyenne"]');
+        if (!Number.isFinite(devoir) && !Number.isFinite(examen)){
+          cell.textContent = '-';
+          return NaN;
+        }
+        const d = Number.isFinite(devoir)? devoir : 0;
+        const e = Number.isFinite(examen)? examen : 0;
+        const avg = (d + e) / 2;
+        cell.textContent = avg.toFixed(2);
+        return avg;
+      }
+
+      function updateAll(){
+        let sum = 0, count = 0;
+        rows.forEach(r=>{
+          const a = updateRow(r);
+          if (Number.isFinite(a)) { sum += a; count++; }
+        });
+        return count? (sum/count) : NaN;
+      }
+
+      // attach listeners
+      rows.forEach(r=>{
+        const inputs = r.querySelectorAll('input[type="number"]');
+        inputs.forEach(inp=>inp.addEventListener('input',()=>{
+          updateRow(r);
+        }));
+      });
+
+      // update overall on any input change
+      document.getElementById('bulletinForm').addEventListener('input',()=>{
+        const overall = updateAll();
+        // could show somewhere if needed
+      });
+
+      validateBtn.addEventListener('click',()=>{
+        // gather info
+        const matricule = document.getElementById('matricule').value.trim();
+        const prenom = document.getElementById('prenom').value.trim();
+        const nom = document.getElementById('nom').value.trim();
+        const filiere = document.getElementById('filiere').value.trim();
+        const niveau = document.getElementById('niveau').value.trim();
+
+        if(!matricule || !prenom || !nom){
+          alert('Veuillez remplir Matricule, Prénom et Nom.');
+          return;
+        }
+
+        // compute averages and list
+        let total=0, nCount=0;
+        const modules = [];
+        rows.forEach(r=>{
+          const module = r.dataset.module || '';
+          const devoir = toNum(r.querySelector('[data-role="devoir"]').value);
+          const examen = toNum(r.querySelector('[data-role="examen"]').value);
+          const d = Number.isFinite(devoir)? devoir : null;
+          const e = Number.isFinite(examen)? examen : null;
+          let avg = null;
+          if (d !== null || e !== null){
+            const dd = d===null?0:d;
+            const ee = e===null?0:e;
+            avg = (dd+ee)/2;
+            total += avg; nCount++;
+          }
+          modules.push({module,devoir:d,examen:e,moyenne:avg});
+        });
+
+        const moyenneGenerale = nCount? (total/nCount) : NaN;
+
+        // build HTML
+        let html = '<h2>Récapitulatif du bulletin</h2>';
+        html += '<div class="flex-between"><div><strong>Matricule:</strong> ' + escapeHtml(matricule) + '<br><strong>Prénom:</strong> ' + escapeHtml(prenom) + '<br><strong>Nom:</strong> ' + escapeHtml(nom) + '</div>';
+        html += '<div><strong>Filière:</strong> ' + escapeHtml(filiere) + '<br><strong>Niveau:</strong> ' + escapeHtml(niveau) + '</div></div>';
+
+        html += '<hr style="margin:12px 0;border:0;border-top:1px solid rgba(15,23,42,0.06)">';
+        html += '<table style="width:100%;border-collapse:collapse"><thead><tr><th style="text-align:left">Module</th><th style="text-align:right">Devoir</th><th style="text-align:right">Examen</th><th style="text-align:right">Moyenne</th></tr></thead><tbody>';
+        modules.forEach(m=>{
+          html += '<tr>';
+          html += '<td style="padding:6px 4px">' + escapeHtml(m.module) + '</td>';
+          html += '<td style="padding:6px 4px;text-align:right">' + (m.devoir===null? '-' : m.devoir.toFixed(2)) + '</td>';
+          html += '<td style="padding:6px 4px;text-align:right">' + (m.examen===null? '-' : m.examen.toFixed(2)) + '</td>';
+          html += '<td style="padding:6px 4px;text-align:right">' + (m.moyenne===null? '-' : m.moyenne.toFixed(2)) + '</td>';
+          html += '</tr>';
+        });
+        html += '</tbody></table>';
+
+        html += '<div style="margin-top:10px;text-align:right"><strong>Moyenne générale:</strong> ' + (Number.isFinite(moyenneGenerale)? moyenneGenerale.toFixed(2) : '-') + '</div>';
+
+        result.innerHTML = html;
+        result.style.display = 'block';
+        result.scrollIntoView({behavior:'smooth',block:'center'});
+      });
+
+      function escapeHtml(s){
+        return String(s).replace(/[&<>"']/g, function(c){
+          return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[c];
+        });
+      }
+
+      // initial compute
+      updateAll();
+    })();
+  </script>
+</body>
+</html>
